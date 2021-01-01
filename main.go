@@ -24,6 +24,22 @@ func main() {
 
 	userService := user.NewService(userRepository)
 
+	// email := user.CheckEmailInput{
+	// 	Email: "andjar@mail.co",
+	// }
+
+	// isAvailable, err := userService.IsEmailAvailable(email)
+
+	// if err != nil {
+	// 	fmt.Println("Error found")
+	// }
+
+	// if isAvailable {
+	// 	fmt.Println("Email available")
+	// } else {
+	// 	fmt.Println("Email is not available")
+	// }
+
 	userHandler := handler.NewUserHandler(userService)
 
 	router := gin.Default()
@@ -31,6 +47,7 @@ func main() {
 
 	api.POST("/users", userHandler.RegisterUser)
 	api.POST("/sessions", userHandler.Login)
+	api.POST("/email_checkers", userHandler.CheckEmailAvailibility)
 
 	router.Run()
 
