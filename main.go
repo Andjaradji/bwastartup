@@ -2,9 +2,11 @@ package main
 
 import (
 	"bwastartup/auth"
+	"bwastartup/campaign"
 	"bwastartup/handler"
 	"bwastartup/helper"
 	"bwastartup/user"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -27,11 +29,28 @@ func main() {
 	}
 
 	userRepository := user.NewRepository(db)
+	campaignRepository := campaign.NewRepository(db)
+
+	campaigns, err := campaignRepository.FindAll()
+
+	fmt.Println("Debug")
+	fmt.Println("Debug")
+	fmt.Println("Debug")
+	fmt.Println(len(campaigns))
+
+	for _, campaign := range campaigns {
+		if len(campaign.CampaignImages) > 0 {
+			fmt.Println(campaign.Name)
+			fmt.Println("Jumlah gambar di Campaign tersebut: ")
+			fmt.Println(len(campaign.CampaignImages))
+			fmt.Println(campaign.CampaignImages[0].FileName)
+		}
+	}
 
 	userService := user.NewService(userRepository)
 
 	authService := auth.NewJwtService()
-	
+
 	userHandler := handler.NewUserHandler(userService, authService)
 
 	router := gin.Default()
@@ -40,23 +59,22 @@ func main() {
 	api.POST("/users", userHandler.RegisterUser)
 	api.POST("/sessions", userHandler.Login)
 	api.POST("/email_checkers", userHandler.CheckEmailAvailibility)
-	api.POST("/avatars",authMiddleware(authService, userService) ,userHandler.UploadAvatar)
-
+	api.POST("/avatars", authMiddleware(authService, userService), userHandler.UploadAvatar)
 
 	router.Run()
 
 }
 
-func authMiddleware (authService auth.Service, userService user.Service) gin.HandlerFunc {
-	return func  ( c *gin.Context){
+func authMiddleware(authService auth.Service, userService user.Service) gin.HandlerFunc {
+	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
-	
-		if !strings.Contains(authHeader, "Bearer"){
-			response := helper.APIResponse("Unauthorized",http.StatusUnauthorized,"No Authorization", nil)
+
+		if !strings.Contains(authHeader, "Bearer") {
+			response := helper.APIResponse("Unauthorized", http.StatusUnauthorized, "No Authorization", nil)
 			c.AbortWithStatusJSON(http.StatusUnauthorized, response)
 			return
 		}
-	
+
 		tokenString := ""
 		arrayToken := strings.Split(authHeader, " ")
 		if len(arrayToken) == 2 {
@@ -66,25 +84,25 @@ func authMiddleware (authService auth.Service, userService user.Service) gin.Han
 		token, err := authService.ValidateToken(tokenString)
 
 		if err != nil {
-			response := helper.APIResponse("Unauthorized",http.StatusUnauthorized,"No Valid Token", nil)
+			response := helper.APIResponse("Unauthorized", http.StatusUnauthorized, "No Valid Token", nil)
 			c.AbortWithStatusJSON(http.StatusUnauthorized, response)
 			return
 		}
 
-		claim , ok := token.Claims.(jwt.MapClaims)
+		claim, ok := token.Claims.(jwt.MapClaims)
 
 		if !ok || !token.Valid {
-			response := helper.APIResponse("Unauthorized",http.StatusUnauthorized,"Token not found", nil)
+			response := helper.APIResponse("Unauthorized", http.StatusUnauthorized, "Token not found", nil)
 			c.AbortWithStatusJSON(http.StatusUnauthorized, response)
 			return
 		}
 
-		userID := int (claim["user_id"].(float64))
+		userID := int(claim["user_id"].(float64))
 
 		user, err := userService.GetUserByID(userID)
 
 		if err != nil {
-			response := helper.APIResponse("Unauthorized",http.StatusUnauthorized,"No Authorization", nil)
+			response := helper.APIResponse("Unauthorized", http.StatusUnauthorized, "No Authorization", nil)
 			c.AbortWithStatusJSON(http.StatusUnauthorized, response)
 			return
 		}
@@ -93,5 +111,3 @@ func authMiddleware (authService auth.Service, userService user.Service) gin.Han
 
 	}
 }
-
-
