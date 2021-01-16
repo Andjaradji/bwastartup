@@ -15,7 +15,7 @@ type CampaignFormater struct {
 	CurrentAmount    int    `json:"current_amount"`
 }
 
-func formatCampaign(campaign Campaign) CampaignFormater {
+func FormatCampaign(campaign Campaign) CampaignFormater {
 	campaignFormatter := CampaignFormater{}
 
 	campaignFormatter.ID = campaign.ID
@@ -45,7 +45,7 @@ func FormatCampaigns(campaigns []Campaign) []CampaignFormater {
 	campaignFormaters := []CampaignFormater{}
 
 	for _, c := range campaigns {
-		campaignFormater := formatCampaign(c)
+		campaignFormater := FormatCampaign(c)
 		campaignFormaters = append(campaignFormaters, campaignFormater)
 	}
 

@@ -34,7 +34,7 @@ func main() {
 
 	userService := user.NewService(userRepository)
 	campaignService := campaign.NewService(campaignRepository)
-	authService := auth.NewJwtService()
+	authService := auth.NewJwtService() 
 
 	userHandler := handler.NewUserHandler(userService, authService)
 	campaignHandler := handler.NewCampaignHandler(campaignService)
@@ -48,10 +48,10 @@ func main() {
 	api.POST("/sessions", userHandler.Login)
 	api.POST("/email_checkers", userHandler.CheckEmailAvailibility)
 	api.POST("/avatars", authMiddleware(authService, userService), userHandler.UploadAvatar)
+	api.POST("/campaigns", authMiddleware(authService, userService), campaignHandler.CreateCampaign)
+	api.PUT("/campaigns/:id", authMiddleware(authService, userService), campaignHandler.UpdateCampaign)
 	api.GET("/campaigns", campaignHandler.GetCampaigns)
 	api.GET("/campaigns/:id", campaignHandler.GetCampaign)
-
-
 
 	router.Run()
 
