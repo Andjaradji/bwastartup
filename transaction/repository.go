@@ -9,6 +9,8 @@ type repository struct {
 type Repository interface {
 	GetByCampaignID(campaignID int) ([]Transaction, error)
 	GetByUserID(UserID int) ([]Transaction, error)
+	Save(transaction Transaction) (Transaction,error)
+	Update(transaction Transaction)(Transaction,error)
 }
 
 func NewRepository (db *gorm.DB) *repository {
@@ -27,7 +29,7 @@ func (r *repository) GetByCampaignID(campaignID int) ([]Transaction, error){
 	return transactions, nil
 }
 
-func (r *repository) 	GetByUserID(userID int) ([]Transaction, error) {
+func (r *repository) GetByUserID(userID int) ([]Transaction, error) {
 	var transactions []Transaction
 
 	err := r.db.Preload("Campaign.CampaignImages", "campaign_images.is_primary = 1").Where("user_id = ?", userID).Order("id desc").Find(&transactions).Error
@@ -37,5 +39,25 @@ func (r *repository) 	GetByUserID(userID int) ([]Transaction, error) {
 	}
 
 	return transactions, nil
+}
+
+func (r *repository) Save (transaction Transaction) (Transaction, error){
+	err := r.db.Create(&transaction).Error
+
+	if err != nil {
+		return transaction, err
+	}
+
+	return transaction, nil
+}
+
+func (r *repository) Update (transaction Transaction) (Transaction, error){
+	err := r.db.Save(&transaction).Error
+
+	if err != nil {
+		return transaction, err
+	}
+
+	return transaction, nil
 }
 
