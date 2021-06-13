@@ -15,8 +15,12 @@ type Service interface {
 }
 
 func NewService() *service {
-	return &service{}
+	return &service{ }
 }
+
+ 
+
+
 
 func (s *service) GetPaymentURL(transaction Transaction, user user.User) (string, error) {
 	midclient := midtrans.NewClient()

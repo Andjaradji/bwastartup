@@ -14,7 +14,7 @@ type transactionHandler struct {
 }
 
 func NewTransactionHandler(service transaction.Service) *transactionHandler {
-	return &transactionHandler{service}
+	return &transactionHandler{}
 }
 
 func (h *transactionHandler) GetCampaignTransactions(c *gin.Context) {
@@ -89,4 +89,26 @@ func (h *transactionHandler) CreateTransaction(c *gin.Context){
 	response := helper.APIResponse("Succes to create transaction", http.StatusOK, "success", transaction.FormatTransaction(newTransaction))
 	c.JSON(http.StatusOK, response)
 
+}
+
+func (h *transactionHandler) GetNotification (c *gin.Context){
+	var input transaction.TransactionNotificationInput
+
+	err := c.ShouldBindJSON(&input)
+
+	if err != nil{
+		response := helper.APIResponse("Failed to Process Notification", http.StatusBadRequest, "error", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	err = h.service.ProcessPayment(input)
+
+	if err != nil{
+		response := helper.APIResponse("Failed to Process Notification", http.StatusBadRequest, "error", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	c.JSON(http.StatusOK,input)
 }
